@@ -1,4 +1,7 @@
+import pytest
+
 from schemator import fields
+from schemator import errors
 from tests.utils import check_field_on_wrong_values
 
 
@@ -8,7 +11,6 @@ def test_base_field():
     assert simple_field.parse_value(42) == 42
     assert simple_field.to_struct(42) == 42
     assert simple_field.validate(42)
-    assert simple_field.get_replacement() is None
     assert not simple_field.required
 
     required_field = fields.BaseField(required=True)
@@ -51,3 +53,9 @@ def test_buildin_types():
 
         wrong_input_values = ['string', '1', '0.123', ['list'], {'dict': 1}]
         check_field_on_wrong_values(number_field, wrong_input_values)
+
+
+def test_broken_default_value():
+
+    with pytest.raises(errors.ValidationError):
+        fields.StringField(default=1)

@@ -23,7 +23,8 @@ class BaseField(object):
                 The functions are called during initialization.
         """
         self.required = required
-        self.default = default() if callable(default) else default
+        default = default() if callable(default) else default
+        self.default = self.parse_value(default) if default else None
 
     def parse_value(self, value):
         """Parse ``value`` to the required form.
@@ -47,15 +48,6 @@ class BaseField(object):
             Structurize value.
         """
         return value
-
-    @classmethod
-    def get_replacement(self):
-        """Get replacement value for this field.
-
-        Returns:
-            Replacement value. By default return `None`.
-        """
-        return None
 
     def validate(self, value):
         """Validate `value`.
