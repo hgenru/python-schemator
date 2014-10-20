@@ -6,12 +6,30 @@ class Model(object):
 
     """Base model."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
+        """Init.
+
+        Args:
+            **kwargs: Dict of values to populate.
+        """
         schema = self.__schema__
         for attr_name in dir(schema):
             value = getattr(schema, attr_name, None)
             if isinstance(value, BaseField) and value.default:
-                setattr(self, attr_name, value.default)
+                populated = kwargs.pop(attr_name, None)
+                field_value = populated if populated else value.default
+                setattr(self, attr_name, field_value)
+        if kwargs:
+            self.populate(**kwargs)
+
+    def populate(self, **kwargs):
+        """Populate model.
+
+        Args:
+            **kwargs: Dict of values to populate.
+        """
+        for name, value in kwargs.items():
+            setattr(self, name, value)
 
     def validate(self):
         """Validate model fields."""

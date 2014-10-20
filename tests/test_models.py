@@ -35,3 +35,29 @@ def test_base_model():
     # Validation will be successful because the second required
     # field has a default value
     test_model.validate()
+
+
+def test_populate_model():
+
+    class CatSchema(Schema):
+        name = fields.StringField(required=True)
+
+    class FoodSchema(Schema):
+        title = fields.StringField
+        kcal = fields.IntegerField
+
+    class CatModel(Model):
+        __schema__ = CatSchema()
+
+    class FoodModel(Model):
+        __schema__ = FoodSchema()
+
+    fucker = CatModel(name='Fucker')
+    assert fucker.name == 'Fucker'
+    fucker.validate()
+
+    cookies = FoodModel()
+    cookies.populate(**{'title': 'Cookies', 'kcal': 220})
+    assert cookies.title == 'Cookies'
+    assert cookies.kcal == 220
+    cookies.validate()
