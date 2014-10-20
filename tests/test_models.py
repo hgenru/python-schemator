@@ -3,7 +3,7 @@ import pytest
 from schemator.models import Model
 from schemator.schema import Schema
 from schemator import fields
-from schemator import errors
+from jsonschema.exceptions import ValidationError
 
 
 def test_base_model():
@@ -19,16 +19,12 @@ def test_base_model():
 
     test_model = TestModel()
 
-    with pytest.raises(errors.ValidationError) as ex:
+    with pytest.raises(ValidationError):
         test_model.validate()
-        missed_field_text = (
-            "['required_field', "
-            "'required_field_with_default_value']")
-        assert missed_field_text in ex.info
 
     test_model.string = 'this_is_string'
 
-    with pytest.raises(errors.ValidationError):
+    with pytest.raises(ValidationError):
         test_model.string = 1
 
     test_model.required_field = 123

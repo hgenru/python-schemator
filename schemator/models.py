@@ -1,4 +1,3 @@
-from schemator import errors
 from schemator.fields import BaseField
 
 
@@ -39,17 +38,19 @@ class Model(object):
         for name, value in kwargs.items():
             setattr(self, name, value)
 
+    def to_struct(self):
+        """To structure."""
+        schema = self.__schema__
+        struct = dict()
+        for name in dir(self):
+            field = getattr(schema, name, None)
+            if field and isinstance(field, BaseField):
+                value = getattr(self, name)
+                value = field.to_struct(value)
+                struct[name] = value
+        schema.validate(struct)
+        return struct
+
     def validate(self):
         """Validate model fields."""
-        schema = self.__schema__
-        # Check missing required fields
-        required_fields = schema.get_required()
-        missing_fields = []
-        for field_name in required_fields:
-            if not hasattr(self, field_name):
-                missing_fields.append(field_name)
-        if missing_fields:
-            raise errors.ValidationError(
-                "Not defined these required fields: {}".format(missing_fields)
-            )
-        return True
+        self.to_struct()

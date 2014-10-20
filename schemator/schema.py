@@ -1,5 +1,7 @@
 from inspect import isclass
 
+from jsonschema import Draft4Validator
+
 from schemator.fields import BaseField
 
 
@@ -15,7 +17,11 @@ class _SchemaMeta(type):
 
 class Schema(object, metaclass=_SchemaMeta):
 
-    """Base schema class."""
+    """Base schema class.
+
+    Attributes:
+        default_json_schema_draft (str): Default json schema draft.
+    """
 
     @classmethod
     def get_required(cls):
@@ -32,12 +38,12 @@ class Schema(object, metaclass=_SchemaMeta):
         return required
 
     @classmethod
-    def to_json_schema(self):
+    def to_json_schema(cls):
         """Convert schema to JsonSchema.
 
         By default use current actual Json Schema draft.
         """
-        return self.to_json_schema_draft4()
+        return cls.to_json_schema_draft4()
 
     @classmethod
     def to_json_schema_draft4(cls):
@@ -68,3 +74,13 @@ class Schema(object, metaclass=_SchemaMeta):
             schema['description'] = description
 
         return schema
+
+    @classmethod
+    def validate(cls, struct):
+        return cls.validate_draft4(struct)
+
+    @classmethod
+    def validate_draft4(cls, struct):
+        json_schema = cls.to_json_schema_draft4()
+        validator = Draft4Validator(json_schema)
+        return validator.validate(struct)

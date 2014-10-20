@@ -1,4 +1,4 @@
-from schemator import errors
+from jsonschema import Draft4Validator
 
 
 class BaseField(object):
@@ -11,7 +11,7 @@ class BaseField(object):
         json_schema_draft4 (dict): JsonSchema definition.
     """
 
-    json_schema_draft4 = {'type': 'any'}
+    json_schema_draft4 = dict()
 
     def __init__(
         self,
@@ -25,6 +25,8 @@ class BaseField(object):
             default (any, optional): The default value for this field.
                 The functions are called during initialization.
         """
+        self.draft4validator = Draft4Validator(self.json_schema_draft4)
+
         self.required = required
         default = default() if callable(default) else default
         self.default = self.parse_value(default) if default else None
@@ -48,12 +50,19 @@ class BaseField(object):
             value (any): Value to structurize.
 
         Returns:
-            Structurize value.
+            Structurized value.
         """
         return value
 
     def validate(self, value):
         """Validate `value`.
+
+        By default use ``self.validate_draft4``.
+        """
+        return self.validate_draft4(value)
+
+    def validate_draft4(self, value):
+        """Validate `value` with JsonSchema draft4.
 
         Args:
             value (any): Value to validate.
@@ -65,8 +74,7 @@ class BaseField(object):
         Raises:
             ValidationError: An process of validation errors occurred.
         """
-        # TODO: Посмотреть что лучше отдавать.
-        return True
+        return self.draft4validator.validate(value)
 
     @classmethod
     def to_json_schema_draft4(cls):
@@ -74,27 +82,7 @@ class BaseField(object):
         return cls.json_schema_draft4
 
 
-class _BuiltInTypesField(BaseField):
-
-    """Built-in types field.
-
-    Attributes:
-        types (tuple): Supported types.
-    """
-
-    types = tuple()
-
-    def parse_value(self, value):
-        self.validate(value)
-        return value
-
-    def validate(self, value):
-        if isinstance(value, self.types):
-            return
-        raise errors.ValidationError()
-
-
-class StringField(_BuiltInTypesField):
+class StringField(BaseField):
 
     """String type field."""
 
@@ -102,7 +90,7 @@ class StringField(_BuiltInTypesField):
     json_schema_draft4 = {'type': 'string'}
 
 
-class IntegerField(_BuiltInTypesField):
+class IntegerField(BaseField):
 
     """"Integer type field."""
 
@@ -110,15 +98,7 @@ class IntegerField(_BuiltInTypesField):
     json_schema_draft4 = {'type': 'integer'}
 
 
-class FloatField(_BuiltInTypesField):
-
-    """Float type field."""
-
-    types = (float,)
-    json_schema_draft4 = {'type': 'float'}
-
-
-class NumberField(_BuiltInTypesField):
+class NumberField(BaseField):
 
     """Number type field."""
 
