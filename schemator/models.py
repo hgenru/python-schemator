@@ -22,6 +22,14 @@ class Model(object):
         if kwargs:
             self.populate(**kwargs)
 
+    def __setattr__(self, name, value):
+        schema = self.__schema__
+        field = getattr(schema, name, None)
+        if field:
+            parsed_value = field.parse_value(value)
+            value = parsed_value
+        return super().__setattr__(name, value)
+
     def populate(self, **kwargs):
         """Populate model.
 
@@ -45,11 +53,3 @@ class Model(object):
                 "Not defined these required fields: {}".format(missing_fields)
             )
         return True
-
-    def __setattr__(self, name, value):
-        schema = self.__schema__
-        field = getattr(schema, name, None)
-        if field:
-            parsed_value = field.parse_value(value)
-            value = parsed_value
-        return super().__setattr__(name, value)

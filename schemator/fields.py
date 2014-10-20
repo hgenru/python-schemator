@@ -8,7 +8,10 @@ class BaseField(object):
     Attributes:
         required (bool): Do require this field or not.
         default (any): Computed default value.
+        json_schema_draft4 (dict): JsonSchema definition.
     """
+
+    json_schema_draft4 = {'type': 'any'}
 
     def __init__(
         self,
@@ -65,8 +68,13 @@ class BaseField(object):
         # TODO: Посмотреть что лучше отдавать.
         return True
 
+    @classmethod
+    def to_json_schema_draft4(cls):
+        """Return JsonSchema definition."""
+        return cls.json_schema_draft4
 
-class BuiltInTypesField(BaseField):
+
+class _BuiltInTypesField(BaseField):
 
     """Built-in types field.
 
@@ -82,33 +90,37 @@ class BuiltInTypesField(BaseField):
 
     def validate(self, value):
         if isinstance(value, self.types):
-            return True
+            return
         raise errors.ValidationError()
 
 
-class StringField(BuiltInTypesField):
+class StringField(_BuiltInTypesField):
 
     """String type field."""
 
     types = (str,)
+    json_schema_draft4 = {'type': 'string'}
 
 
-class IntegerField(BuiltInTypesField):
+class IntegerField(_BuiltInTypesField):
 
     """"Integer type field."""
 
     types = (int,)
+    json_schema_draft4 = {'type': 'integer'}
 
 
-class FloatField(BuiltInTypesField):
+class FloatField(_BuiltInTypesField):
 
     """Float type field."""
 
     types = (float,)
+    json_schema_draft4 = {'type': 'float'}
 
 
-class NumberField(BuiltInTypesField):
+class NumberField(_BuiltInTypesField):
 
     """Number type field."""
 
     types = (int, float)
+    json_schema_draft4 = {'type': 'number'}

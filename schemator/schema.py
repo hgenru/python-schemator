@@ -17,15 +17,54 @@ class Schema(object, metaclass=_SchemaMeta):
 
     """Base schema class."""
 
-    def get_required(self):
+    @classmethod
+    def get_required(cls):
         """Get required fields.
 
         Returns:
             `List` of required fields name.
         """
         required = []
-        for name in dir(self):
-            value = getattr(self, name, None)
+        for name in dir(cls):
+            value = getattr(cls, name, None)
             if isinstance(value, BaseField) and value.required:
                 required.append(name)
         return required
+
+    @classmethod
+    def to_json_schema(self):
+        """Convert schema to JsonSchema.
+
+        By default use current actual Json Schema draft.
+        """
+        return self.to_json_schema_draft4()
+
+    @classmethod
+    def to_json_schema_draft4(cls):
+        """Convert schema to JsonSchema Draft#4."""
+        title = cls.__title__ if hasattr(cls, '__title__') else cls.__name__
+        schema_draft = "http://json-schema.org/draft-04/schema#"
+        required_fields = cls.get_required()
+        properties = dict()
+
+        for name in dir(cls):
+            value = getattr(cls, name, None)
+            if isinstance(value, BaseField):
+                prop_schema = value.to_json_schema_draft4()
+                properties[name] = prop_schema
+
+        schema = {
+            '$schema': schema_draft,
+            'title': title,
+            'type': 'object',
+            'properties': properties,
+            'required': required_fields
+        }
+
+        description = cls.__doc__
+        if hasattr(cls, '__description__'):
+            description = cls.__description__
+        if description:
+            schema['description'] = description
+
+        return schema
