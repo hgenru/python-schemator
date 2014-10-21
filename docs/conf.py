@@ -44,6 +44,7 @@ import versioneer
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
     'sphinxcontrib.napoleon',
     'sphinx.ext.viewcode',
 ]
@@ -65,6 +66,7 @@ source_suffix = '.rst'
 
 # The master toctree document.
 master_doc = 'index'
+autosummary_generate = True
 
 # General information about the project.
 project = u'Python Schemator'
