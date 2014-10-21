@@ -45,15 +45,11 @@ import versioneer
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
+    'sphinx.ext.coverage',
     'sphinxcontrib.napoleon',
     'sphinx.ext.viewcode',
 ]
 
-try:
-    import sphinxcontrib.spelling
-    extensions.append('sphinxcontrib.spelling')
-except ImportError:
-    pass
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
